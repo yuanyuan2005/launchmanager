@@ -28,6 +28,16 @@ const api = {
   checkPathValidity: () =>
     ipcRenderer.invoke(IPC_CHANNELS.CHECK_PATH_VALIDITY),
 
+  // ===== 批量操作 =====
+  removeProjects: (ids: string[]) =>
+    ipcRenderer.invoke(IPC_CHANNELS.BATCH_REMOVE_PROJECTS, ids),
+  moveProjectsGroup: (ids: string[], groupId: string) =>
+    ipcRenderer.invoke(IPC_CHANNELS.BATCH_MOVE_PROJECTS_GROUP, ids, groupId),
+  batchAddTag: (ids: string[], tagId: string) =>
+    ipcRenderer.invoke(IPC_CHANNELS.BATCH_ADD_TAG_TO_PROJECTS, ids, tagId),
+  batchRemoveTag: (ids: string[], tagId: string) =>
+    ipcRenderer.invoke(IPC_CHANNELS.BATCH_REMOVE_TAG_FROM_PROJECTS, ids, tagId),
+
   // ===== 分组操作 =====
   getAllGroups: () => ipcRenderer.invoke(IPC_CHANNELS.GET_ALL_GROUPS),
   createGroup: (name: string) =>

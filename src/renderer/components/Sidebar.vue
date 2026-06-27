@@ -64,7 +64,7 @@ async function onMoveDown(): Promise<void> {
   await groupStore.moveGroupDown(ctxGroup.value.id)
 }
 
-// ===== 拖放支持 =====
+// ===== 拖放支持（兼容多选 + 单选） =====
 function onDragOverGroup(e: DragEvent): void {
   e.preventDefault()
   e.stopPropagation()
@@ -76,6 +76,18 @@ function onDragOverGroup(e: DragEvent): void {
 function onDropOnGroup(e: DragEvent, groupId: string): void {
   e.preventDefault()
   e.stopPropagation()
+
+  // 尝试多选格式
+  const multiData = e.dataTransfer?.getData('text/project-ids')
+  if (multiData) {
+    try {
+      const ids: string[] = JSON.parse(multiData)
+      projectStore.moveProjectsToGroup(ids, groupId)
+    } catch { /* ignore parse error */ }
+    return
+  }
+
+  // 回退单选格式
   const projectId = e.dataTransfer?.getData('text/project-id')
   if (projectId) {
     projectStore.moveToGroup(projectId, groupId)

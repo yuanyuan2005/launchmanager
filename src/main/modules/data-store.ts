@@ -200,6 +200,52 @@ export class DataStore {
     this.save()
   }
 
+  /** 批量删除——清理图标 + filter + 一次 save */
+  batchRemoveProjects(ids: string[]): void {
+    const idSet = new Set(ids)
+    for (const id of idSet) {
+      const project = this.data.projects.find(p => p.id === id)
+      if (project?.icon) {
+        this.deleteIconFile(project.icon)
+      }
+    }
+    this.data.projects = this.data.projects.filter(p => !idSet.has(p.id))
+    this.save()
+  }
+
+  /** 批量移动分组——更新 groupId + 一次 save */
+  batchMoveToGroup(ids: string[], groupId: string): void {
+    const idSet = new Set(ids)
+    for (const project of this.data.projects) {
+      if (idSet.has(project.id)) {
+        project.groupId = groupId
+      }
+    }
+    this.save()
+  }
+
+  /** 批量添加标签——去重 push + 一次 save */
+  batchAddTag(ids: string[], tagId: string): void {
+    const idSet = new Set(ids)
+    for (const project of this.data.projects) {
+      if (idSet.has(project.id) && !project.tagIds.includes(tagId)) {
+        project.tagIds.push(tagId)
+      }
+    }
+    this.save()
+  }
+
+  /** 批量移除标签——filter + 一次 save */
+  batchRemoveTag(ids: string[], tagId: string): void {
+    const idSet = new Set(ids)
+    for (const project of this.data.projects) {
+      if (idSet.has(project.id)) {
+        project.tagIds = project.tagIds.filter(t => t !== tagId)
+      }
+    }
+    this.save()
+  }
+
   /** 获取图标目录路径（不存在则创建） */
   getIconsDir(): string {
     const dir = join(this.dataDir, ICONS_DIR)

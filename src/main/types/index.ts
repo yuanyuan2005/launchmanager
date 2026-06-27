@@ -76,6 +76,11 @@ export const IPC_CHANNELS = {
   CREATE_TAG: 'create-tag',
   RENAME_TAG: 'rename-tag',
   DELETE_TAG: 'delete-tag',
+  // 批量操作
+  BATCH_REMOVE_PROJECTS: 'batch-remove-projects',
+  BATCH_MOVE_PROJECTS_GROUP: 'batch-move-projects-group',
+  BATCH_ADD_TAG_TO_PROJECTS: 'batch-add-tag-to-projects',
+  BATCH_REMOVE_TAG_FROM_PROJECTS: 'batch-remove-tag-from-projects',
   // 设置
   GET_SETTINGS: 'get-settings',
   UPDATE_SETTINGS: 'update-settings',

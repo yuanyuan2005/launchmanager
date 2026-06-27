@@ -38,6 +38,50 @@ export const useUiStore = defineStore('ui', () => {
   const editingGroup = ref<{ id: string; name: string } | null>(null)
   const editingTag = ref<{ id: string; name: string } | null>(null)
 
+  // ===== 多选状态 =====
+  const selectedProjectIds = ref<Set<string>>(new Set())
+  const lastClickedIndex = ref<number | null>(null)
+
+  const selectionCount = computed(() => selectedProjectIds.value.size)
+
+  function isSelected(id: string): boolean {
+    return selectedProjectIds.value.has(id)
+  }
+
+  function toggleSelect(id: string, index: number): void {
+    const newSet = new Set(selectedProjectIds.value)
+    if (newSet.has(id)) {
+      newSet.delete(id)
+    } else {
+      newSet.add(id)
+    }
+    selectedProjectIds.value = newSet
+    lastClickedIndex.value = index
+  }
+
+  function rangeSelect(fromIndex: number, toIndex: number, visibleIds: string[]): void {
+    const newSet = new Set(selectedProjectIds.value)
+    const start = Math.min(fromIndex, toIndex)
+    const end = Math.max(fromIndex, toIndex)
+    for (let i = start; i <= end; i++) {
+      if (i >= 0 && i < visibleIds.length) {
+        newSet.add(visibleIds[i])
+      }
+    }
+    selectedProjectIds.value = newSet
+    // lastClickedIndex 保持在 range 的起始点，继续 Shift+Click 时从原锚点扩展
+  }
+
+  function selectAll(visibleIds: string[]): void {
+    selectedProjectIds.value = new Set(visibleIds)
+    lastClickedIndex.value = null
+  }
+
+  function clearSelection(): void {
+    selectedProjectIds.value = new Set()
+    lastClickedIndex.value = null
+  }
+
   // ===== 标签筛选操作 =====
   function toggleTag(tagId: string): void {
     const newSet = new Set(selectedTagIds.value)
@@ -107,11 +151,23 @@ export const useUiStore = defineStore('ui', () => {
     contextMenu,
     editingGroup,
     editingTag,
+    // 多选
+    selectedProjectIds,
+    lastClickedIndex,
+    selectionCount,
+    isSelected,
+    toggleSelect,
+    rangeSelect,
+    selectAll,
+    clearSelection,
+    // 标签筛选
     toggleTag,
     toggleFilterMode,
     clearTagFilter,
+    // 右键菜单
     showContextMenu,
     hideContextMenu,
+    // 对话框
     openAddProjectDialog,
     closeAddProjectDialog,
     openGroupEditDialog,

@@ -129,6 +129,38 @@ export class ProjectManager {
     return true
   }
 
+  // ===== 批量操作 =====
+
+  /** 批量删除 */
+  batchRemoveProjects(ids: string[]): boolean {
+    if (!ids || ids.length === 0) return false
+    this.store.batchRemoveProjects(ids)
+    return true
+  }
+
+  /** 批量移动到分组 */
+  batchMoveToGroup(ids: string[], groupId: string): boolean {
+    if (!ids || ids.length === 0) return false
+    const group = this.store.getGroups().find(g => g.id === groupId)
+    if (!group) return false
+    this.store.batchMoveToGroup(ids, groupId)
+    return true
+  }
+
+  /** 批量添加标签 */
+  batchAddTag(ids: string[], tagId: string): boolean {
+    if (!ids || ids.length === 0) return false
+    this.store.batchAddTag(ids, tagId)
+    return true
+  }
+
+  /** 批量移除标签 */
+  batchRemoveTag(ids: string[], tagId: string): boolean {
+    if (!ids || ids.length === 0) return false
+    this.store.batchRemoveTag(ids, tagId)
+    return true
+  }
+
   /** 检查所有项目路径有效性（批量更新，只保存一次） */
   checkAllValidity(): void {
     const projects = this.store.getProjects()

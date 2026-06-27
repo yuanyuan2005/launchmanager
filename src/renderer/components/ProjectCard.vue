@@ -3,18 +3,24 @@ import { ref, onMounted, computed } from 'vue'
 import type { Project } from '../../main/types'
 import { getTypeIcon } from '../utils/ipc-client'
 import { useProjectStore } from '../stores/project-store'
+import { useUiStore } from '../stores/ui-store'
 import { useIconLoader } from '../composables/useIconLoader'
 
 const props = defineProps<{
   project: Project
+  selected?: boolean
+  index?: number
 }>()
 
 const emit = defineEmits<{
   launch: [projectId: string]
   contextmenu: [event: { projectId: string; x: number; y: number }]
+  'toggle-select': [event: { id: string; index: number }]
+  'shift-select': [event: { id: string; index: number }]
 }>()
 
 const store = useProjectStore()
+const uiStore = useUiStore()
 const { observe } = useIconLoader()
 
 // 文件夹回退图标
@@ -34,7 +40,7 @@ const iconReady = ref(false)
 async function loadIcon(): Promise<void> {
   if (!props.project.isValid) return
 
-  // ① store 中已有缓存（其他卡片加载时写入的）
+  // ① store 中已有缓存
   if (store.iconDataMap[props.project.id]) {
     setIcon(store.iconDataMap[props.project.id])
     return
@@ -55,28 +61,21 @@ async function loadIcon(): Promise<void> {
         setIcon(dataUrl)
         return
       }
-    } catch {
-      // 磁盘缓存未命中，继续
-    }
+    } catch { /* 未命中，继续 */ }
   }
 
-  // ③ 实时获取（最慢，仅磁盘缓存未命中时走这里）
+  // ③ 实时获取
   try {
     const dataUrl = await window.api.getFileIcon(props.project.sourcePath)
     if (dataUrl) {
       store.iconDataMap[props.project.id] = dataUrl
       setIcon(dataUrl)
     }
-  } catch {
-    // 获取失败，保持占位符
-  }
+  } catch { /* 失败，保持占位符 */ }
 }
 
-/** 设置图标 src 并触发淡入 */
 function setIcon(dataUrl: string): void {
   iconSrc.value = dataUrl
-  // requestAnimationFrame 确保 v-if 创建的 img 元素已挂载到 DOM，
-  // 下一帧再设 opacity-100，CSS transition 产生淡入效果
   requestAnimationFrame(() => {
     iconReady.value = true
   })
@@ -87,15 +86,26 @@ function onImgError(): void {
   iconReady.value = false
 }
 
-// ===== 交互 =====
-function onClick(): void {
-  if (props.project.isValid) {
+// ===== 交互（多选 + 启动） =====
+function onClick(e: MouseEvent): void {
+  if (!props.project.isValid) return
+
+  if (e.ctrlKey || e.metaKey) {
+    // Ctrl+Click：切换选中
+    emit('toggle-select', { id: props.project.id, index: props.index ?? -1 })
+  } else if (e.shiftKey && uiStore.lastClickedIndex !== null) {
+    // Shift+Click：范围选择
+    emit('shift-select', { id: props.project.id, index: props.index ?? -1 })
+  } else {
+    // 无修饰键：清空选中 + 启动
+    uiStore.clearSelection()
     emit('launch', props.project.id)
   }
 }
 
 function onContextMenu(e: MouseEvent): void {
   e.preventDefault()
+  // 不在这里处理选中逻辑——由 ProjectGrid 统一处理
   emit('contextmenu', {
     projectId: props.project.id,
     x: e.clientX,
@@ -104,11 +114,16 @@ function onContextMenu(e: MouseEvent): void {
 }
 
 function onDragStart(e: DragEvent): void {
-  e.dataTransfer?.setData('text/project-id', props.project.id)
+  // 多选拖拽：序列化全部选中 ID
+  if (props.selected && uiStore.selectionCount > 1) {
+    e.dataTransfer?.setData('text/project-ids', JSON.stringify([...uiStore.selectedProjectIds]))
+  } else {
+    e.dataTransfer?.setData('text/project-id', props.project.id)
+  }
   e.dataTransfer!.effectAllowed = 'move'
 }
 
-// ===== P1: 卡片进入视口时才加载图标 =====
+// ===== P1: 视口懒加载 =====
 onMounted(() => {
   if (cardRef.value) {
     observe(cardRef.value, () => loadIcon())
@@ -120,13 +135,24 @@ onMounted(() => {
   <div
     ref="cardRef"
     class="card relative group"
-    :class="{ 'card-invalid': !project.isValid }"
+    :class="{
+      'card-invalid': !project.isValid,
+      'card-selected': selected
+    }"
     draggable="true"
     @click="onClick"
     @contextmenu="onContextMenu"
     @dragstart="onDragStart"
     :title="project.isValid ? project.name : `${project.name} (路径无效)`"
   >
+    <!-- 选中标记：左上角蓝色圆形勾 -->
+    <div
+      v-if="selected"
+      class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center z-10 shadow-sm"
+    >
+      <span class="i-mdi-check-bold text-white text-11px" />
+    </div>
+
     <!-- 图标区 -->
     <div class="card-icon relative">
       <!-- P0: 占位符 —— 始终渲染，瞬间可见 -->
@@ -141,7 +167,7 @@ onMounted(() => {
         :class="[getTypeIcon(project.type), project.type === 'folder' ? 'text-amber-500' : 'text-blue-500']"
       />
 
-      <!-- P0: 真实图标 —— 异步加载完成后淡入，覆盖占位符 -->
+      <!-- P0: 真实图标 —— 异步加载完成后淡入 -->
       <img
         v-if="iconSrc"
         :src="iconSrc"

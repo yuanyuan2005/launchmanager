@@ -61,6 +61,24 @@ export function registerIpcHandlers(ctx: IpcContext): void {
     return projectManager.updateTags(projectId, tagIds)
   })
 
+  // ===== 批量操作 =====
+
+  ipcMain.handle(IPC_CHANNELS.BATCH_REMOVE_PROJECTS, (_event, ids: string[]) => {
+    return projectManager.batchRemoveProjects(ids)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.BATCH_MOVE_PROJECTS_GROUP, (_event, ids: string[], groupId: string) => {
+    return projectManager.batchMoveToGroup(ids, groupId)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.BATCH_ADD_TAG_TO_PROJECTS, (_event, ids: string[], tagId: string) => {
+    return projectManager.batchAddTag(ids, tagId)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.BATCH_REMOVE_TAG_FROM_PROJECTS, (_event, ids: string[], tagId: string) => {
+    return projectManager.batchRemoveTag(ids, tagId)
+  })
+
   ipcMain.handle(IPC_CHANNELS.OPEN_FILE_LOCATION, (_event, projectId: string) => {
     const project = projectManager.getAll().find(p => p.id === projectId)
     if (!project) {

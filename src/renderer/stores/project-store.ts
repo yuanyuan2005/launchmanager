@@ -116,6 +116,56 @@ export const useProjectStore = defineStore('project', () => {
     return projects.value.find(p => p.id === id)
   }
 
+  // ===== 批量操作 =====
+
+  async function removeProjects(ids: string[]): Promise<boolean> {
+    const result = await window.api.removeProjects(ids)
+    if (result) {
+      const idSet = new Set(ids)
+      projects.value = projects.value.filter(p => !idSet.has(p.id))
+    }
+    return result
+  }
+
+  async function moveProjectsToGroup(ids: string[], groupId: string): Promise<boolean> {
+    const result = await window.api.moveProjectsGroup(ids, groupId)
+    if (result) {
+      const idSet = new Set(ids)
+      for (const project of projects.value) {
+        if (idSet.has(project.id)) {
+          project.groupId = groupId
+        }
+      }
+    }
+    return result
+  }
+
+  async function batchAddTag(ids: string[], tagId: string): Promise<boolean> {
+    const result = await window.api.batchAddTag(ids, tagId)
+    if (result) {
+      const idSet = new Set(ids)
+      for (const project of projects.value) {
+        if (idSet.has(project.id) && !project.tagIds.includes(tagId)) {
+          project.tagIds.push(tagId)
+        }
+      }
+    }
+    return result
+  }
+
+  async function batchRemoveTag(ids: string[], tagId: string): Promise<boolean> {
+    const result = await window.api.batchRemoveTag(ids, tagId)
+    if (result) {
+      const idSet = new Set(ids)
+      for (const project of projects.value) {
+        if (idSet.has(project.id)) {
+          project.tagIds = project.tagIds.filter(t => t !== tagId)
+        }
+      }
+    }
+    return result
+  }
+
   return {
     projects,
     loading,
@@ -130,6 +180,10 @@ export const useProjectStore = defineStore('project', () => {
     launchProject,
     openFileLocation,
     checkValidity,
-    getProject
+    getProject,
+    removeProjects,
+    moveProjectsToGroup,
+    batchAddTag,
+    batchRemoveTag
   }
 })
