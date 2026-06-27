@@ -14,8 +14,7 @@ export const useProjectStore = defineStore('project', () => {
     const data = await window.api.getAllProjects()
     if (data) projects.value = data
     loading.value = false
-    // 后台预加载图标（不阻塞 UI；各卡片通过 loadIcon 步骤②.5 自行读取磁盘缓存）
-    preloadIcons()
+    // 图标由 ProjectCard 按视口懒加载（P1），不再全量预加载
   }
 
   /** 并发预加载所有项目的磁盘缓存图标（每批 6 个） */

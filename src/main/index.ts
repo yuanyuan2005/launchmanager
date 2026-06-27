@@ -32,29 +32,15 @@ function createWindow(): void {
     }
   })
 
-  // ready-to-show 仅作为兜底：启动 5s 超时，防止 renderer 崩溃导致窗口永远不显示
-  let rendererReady = false
-  let fallbackTimer: ReturnType<typeof setTimeout> | null = null
-
+  // 首次绘制完成立即显示窗口——HTML 中的 #app-splash 遮罩保证用户看到纯灰底
+  // Vue mount + 数据加载完成后，渲染进程会淡出遮罩露出真实内容
   mainWindow.once('ready-to-show', () => {
-    fallbackTimer = setTimeout(() => {
-      if (!rendererReady) {
-        console.log('[LaunchHub] Renderer did not signal ready within 5s, showing via fallback')
-        showWindow()
-      }
-    }, 5000)
+    showWindow()
   })
 
-  // 收到 renderer 就绪信号后立即显示窗口（消除 dev 模式下 Vite 编译期的黑/白屏）
+  // 渲染进程就绪信号（仅用于日志，窗口已在 ready-to-show 中显示）
   ipcMain.handle(IPC_CHANNELS.RENDERER_READY, () => {
-    if (!rendererReady) {
-      rendererReady = true
-      if (fallbackTimer) {
-        clearTimeout(fallbackTimer)
-        fallbackTimer = null
-      }
-      showWindow()
-    }
+    console.log('[LaunchHub] Renderer ready')
   })
 
   // 开发模式加载 dev server，生产模式加载文件
@@ -135,7 +121,7 @@ app.whenReady().then(() => {
     }
   })
 
-  // 窗口将在 renderer 发送 RENDERER_READY 信号后显示（ready-to-show 作为 5s 超时兜底）
+  // 窗口在 ready-to-show 时立即显示（#app-splash 遮罩覆盖，无黑屏）
   console.log('[LaunchHub] App ready')
 })
 

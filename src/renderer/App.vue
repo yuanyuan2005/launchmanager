@@ -20,12 +20,16 @@ const tagStore = useTagStore()
 const uiStore = useUiStore()
 
 onMounted(async () => {
-  // 加载所有数据
-  await Promise.all([
+  // 并行：数据加载 + 遮罩最短展示时长（800ms），避免一闪而过像抽搐
+  const minSplashMs = 800
+  const dataPromise = Promise.all([
     projectStore.loadProjects(),
     groupStore.loadGroups(),
     tagStore.loadTags(),
   ])
+  const minDelay = new Promise(resolve => setTimeout(resolve, minSplashMs))
+
+  await Promise.all([dataPromise, minDelay])
 
   // 首次运行：自动扫描桌面
   if (projectStore.projects.length === 0) {
@@ -38,7 +42,15 @@ onMounted(async () => {
   // 检查路径有效性
   await projectStore.checkValidity()
 
-  // 通知主进程：渲染器已完全就绪，可以安全显示窗口
+  // 淡出启动遮罩，露出真实内容
+  const splash = document.getElementById('app-splash')
+  if (splash) {
+    splash.classList.add('is-hidden')
+    // 动画结束后移除 DOM，释放内存
+    splash.addEventListener('transitionend', () => splash.remove(), { once: true })
+  }
+
+  // 通知主进程渲染器就绪
   window.api.notifyReady()
 })
 </script>
