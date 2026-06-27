@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7B2FBE"/>
+      <stop offset="100%" stop-color="#FF6B35"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 深紫→活力橙渐变圆角背景 -->
+  <rect width="256" height="256" rx="56" fill="url(#bg)"/>
+
+  <!-- 2×2 网格，缩小方块，增加间距，更有呼吸感 -->
+  <!-- 左上：实心白 -->
+  <rect x="58" y="58" width="48" height="48" rx="13" fill="#FFFFFF"/>
+
+  <!-- 右上：描边 -->
+  <rect x="142" y="58" width="48" height="48" rx="13" fill="none" stroke="#FFFFFF" stroke-width="4" opacity="0.30"/>
+
+  <!-- 左下：描边 -->
+  <rect x="58" y="142" width="48" height="48" rx="13" fill="none" stroke="#FFFFFF" stroke-width="4" opacity="0.30"/>
+
+  <!-- 右下：描边 -->
+  <rect x="142" y="142" width="48" height="48" rx="13" fill="none" stroke="#FFFFFF" stroke-width="4" opacity="0.30"/>
+</svg>

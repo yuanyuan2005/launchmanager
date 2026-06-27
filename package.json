@@ -26,6 +26,7 @@
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "@vitejs/plugin-vue": "^5.1.4",
+    "canvas": "^3.2.3",
     "electron": "^27.3.11",
     "electron-builder": "^24.13.3",
     "electron-vite": "^2.3.0",
