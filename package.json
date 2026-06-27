@@ -1,0 +1,72 @@
+{
+  "name": "launch-hub",
+  "version": "1.0.0",
+  "description": "个人常用文件与程序的可视化管理启动器",
+  "main": "out/main/index.js",
+  "author": "LaunchHub",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "pack": "electron-builder --dir",
+    "dist": "electron-vite build && electron-builder",
+    "dist:win": "electron-vite build && electron-builder --win",
+    "lint": "eslint . --ext .ts,.vue --fix",
+    "format": "prettier --write \"src/**/*.{ts,vue,css}\""
+  },
+  "dependencies": {
+    "pinia": "^2.1.7",
+    "vue": "^3.4.38"
+  },
+  "devDependencies": {
+    "@iconify/json": "^2.2.239",
+    "@types/node": "^20.14.15",
+    "@vitejs/plugin-vue": "^5.1.4",
+    "electron": "^27.3.11",
+    "electron-builder": "^24.13.3",
+    "electron-vite": "^2.3.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-vue": "^9.24.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.3.3",
+    "unocss": "^0.58.9",
+    "unplugin-icons": "^0.18.5",
+    "vue-tsc": "^2.0.29"
+  },
+  "build": {
+    "appId": "com.launchhub.app",
+    "productName": "LaunchHub",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "out/**/*",
+      "resources/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "resources/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "LaunchHub"
+    },
+    "portable": {
+      "artifactName": "LaunchHub_${version}_portable.exe"
+    }
+  }
+}
