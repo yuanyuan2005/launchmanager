@@ -1,4 +1,5 @@
 import { defineConfig, presetUno, presetIcons } from 'unocss'
+import mdiIcons from '@iconify-json/mdi/icons.json'
 
 export default defineConfig({
   presets: [
@@ -8,7 +9,10 @@ export default defineConfig({
       extraProperties: {
         'display': 'inline-block',
         'vertical-align': 'middle'
-      }
+      },
+      collections: {
+        mdi: () => mdiIcons,
+      },
     })
   ],
   shortcuts: {
